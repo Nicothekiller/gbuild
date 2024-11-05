@@ -13,14 +13,14 @@ import (
 type CompileFlags struct {
 	compiler  string
 	compFlags []string
-	ldFlags   string
+	ldFlags   []string
 }
 
 // func to make a new struct
 func newCompileFlags() CompileFlags {
-	comp := "gcc"
+	comp := "g++"
 	cflags := []string{"-Wall", "-Wextra", "-Wpedantic", "-pipe", "-O2"}
-	ldflags := ""
+	ldflags := []string{}
 	return CompileFlags{comp, cflags, ldflags}
 }
 
@@ -28,6 +28,7 @@ func newCompileFlags() CompileFlags {
 func (flags *CompileFlags) compile() {
 	files := getFiles()
 	var wg sync.WaitGroup
+	oFiles := []string{}
 
 	for _, v := range files {
 		wg.Add(1)
@@ -35,6 +36,9 @@ func (flags *CompileFlags) compile() {
 			ndFile := strings.Split(v, "/")
 
 			oFile := "bin/" + ndFile[len(ndFile)-1] + ".o"
+
+			oFiles = append(oFiles, oFile)
+
 			fFlags := []string{"-c", v, "-o", oFile}
 
 			fFlags = append(fFlags, flags.compFlags...)
@@ -55,4 +59,20 @@ func (flags *CompileFlags) compile() {
 	}
 
 	wg.Wait()
+
+	cmdf := oFiles
+	cmdf = append(cmdf, []string{"-o", "main"}...)
+	cmdf = append(cmdf, flags.compFlags...)
+	cmdf = append(cmdf, flags.ldFlags...)
+
+	fmt.Println(flags.compiler, cmdf)
+
+	exeCmd := exec.Command(flags.compiler, cmdf...)
+	exeCmd.Stdout = os.Stdout
+	exeCmd.Stderr = os.Stderr
+
+	err := exeCmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
