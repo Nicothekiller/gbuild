@@ -8,12 +8,14 @@ import (
 	"strings"
 )
 
+// struct for flags to compile
 type CompileFlags struct {
 	compiler  string
 	compFlags []string
 	ldFlags   string
 }
 
+// func to make a new struct
 func newCompileFlags() CompileFlags {
 	comp := "gcc"
 	cflags := []string{"-Wall", "-Wextra", "-Wpedantic", "-pipe", "-O2"}
@@ -21,6 +23,7 @@ func newCompileFlags() CompileFlags {
 	return CompileFlags{comp, cflags, ldflags}
 }
 
+// func for compiling with the given flags
 func (flags *CompileFlags) compile() {
 	files := getFiles()
 
